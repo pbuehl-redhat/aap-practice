@@ -1,0 +1,10 @@
+# Ansible-specific
+*.retry
+*.vault
+*venv/
+
+# Local credentials
+credentials.yml
+
+# Common files
+.DS_Store
