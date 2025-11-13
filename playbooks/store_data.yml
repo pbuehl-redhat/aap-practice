@@ -3,6 +3,7 @@
   hosts: localhost
   connection: local
   gather_facts: false
+  become: yes
 
   tasks:
     - name: Create a file on the persistent volume
