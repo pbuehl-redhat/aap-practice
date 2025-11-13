@@ -4,6 +4,7 @@
   connection: local
   gather_facts: false
   become: true
+  become_method: su
 
   tasks:
     - name: Check id
