@@ -5,6 +5,10 @@
   gather_facts: false
 
   tasks:
+    - name: Pause for debugging
+      ansible.builtin.pause:
+        minutes: 10
+
     - name: Create a file on the persistent volume
       ansible.builtin.copy:
         content: "This data was created by Playbook A at anime"
