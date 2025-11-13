@@ -5,6 +5,10 @@
   gather_facts: false
 
   tasks:
+
+    - name: Print permissions
+      command: ls -l /mnt/share
+
     - name: Create a file on the persistent volume
       ansible.builtin.copy:
         content: "This data was created by Playbook A at anime"
