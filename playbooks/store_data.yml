@@ -3,8 +3,6 @@
   hosts: localhost
   connection: local
   gather_facts: false
-  become: true
-  become_method: su
 
   tasks:
     - name: Check id
@@ -13,12 +11,12 @@
     - name: Print permissions
       command: ls -l /mnt
 
+    - name: Create a file
+      ansible.builtin.copy:
+        content: "This data was created by Playbook A at anime"
+        dest: mission_data.txt
+
     - name: Create a file on the persistent volume
       ansible.builtin.copy:
         content: "This data was created by Playbook A at anime"
         dest: /mnt/share/mission_data.txt
-        mode: '0644'
-
-    - name: Announce completion
-      ansible.builtin.debug:
-        msg: "Playbook A has successfully saved 'mission_data.txt' to /mnt/share"
