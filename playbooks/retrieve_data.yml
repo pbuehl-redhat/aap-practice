@@ -3,7 +3,6 @@
   hosts: localhost
   connection: local
   gather_facts: false
-  become: yes
 
   vars:
     shared_file_path: /mnt/share/mission_data.txt
