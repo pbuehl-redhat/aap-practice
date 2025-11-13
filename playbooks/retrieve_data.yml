@@ -1,0 +1,26 @@
+---
+- name: Playbook B - Read the shared file
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    shared_file_path: /mnt/share/mission_data.txt
+
+  tasks:
+    - name: Wait for the file to exist (optional, but good practice)
+      ansible.builtin.wait_for:
+        path: "{{ shared_file_path }}"
+        state: present
+        timeout: 5
+      ignore_errors: true
+
+    - name: Read the file content from the persistent volume
+      ansible.builtin.slurp:
+        src: "{{ shared_file_path }}"
+      register: shared_file_content
+
+    - name: Show the content
+      ansible.builtin.debug:
+        msg: "Playbook B is reading the file. Content: {{ shared_file_content.content | b64decode }}"
+      when: shared_file_content.content is defined

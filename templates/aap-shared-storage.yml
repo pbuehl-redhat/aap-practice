@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: aap-shared-storage
+spec:
+  accessModes:
+    - ReadWriteMany  # <-- This is the most important part
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: ocs-external-storagecluster-ceph-rbd  # <-- This will vary (e.g., 'nfs', 'efs-sc', etc.)

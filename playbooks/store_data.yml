@@ -1,0 +1,16 @@
+---
+- name: Playbook A - Create a shared file
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  tasks:
+    - name: Create a file on the persistent volume
+      ansible.builtin.copy:
+        content: "This data was created by Playbook A at {{ ansible_date_time.iso8601 }}"
+        dest: /mnt/share/mission_data.txt
+        mode: '0644'
+
+    - name: Announce completion
+      ansible.builtin.debug:
+        msg: "Playbook A has successfully saved 'mission_data.txt' to /mnt/share"
