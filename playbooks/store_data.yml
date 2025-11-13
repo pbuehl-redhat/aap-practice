@@ -7,7 +7,7 @@
   tasks:
 
     - name: Print permissions
-      command: ls -l /mnt/share
+      command: ls -l /mnt
 
     - name: Create a file on the persistent volume
       ansible.builtin.copy:
