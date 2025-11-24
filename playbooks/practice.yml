@@ -1,0 +1,9 @@
+---
+- name: Playbook A - Create a shared file
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  tasks:
+    - name: Check id
+      command: id
