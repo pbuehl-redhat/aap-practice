@@ -1,0 +1,47 @@
+---
+- name: Check if TSA (RSCT) is installed
+  ansible.builtin.stat:
+    path: "{{ tsa_bin_path }}/lssam"
+  register: tsa_installed
+
+- name: Execute TSA Health Check
+  block:
+    - name: Get TSA Cluster Status (lssam)
+      ansible.builtin.shell: |
+        export CT_MANAGEMENT_SCOPE=2
+        {{ tsa_bin_path }}/lssam -top
+      register: lssam_output
+      changed_when: false
+
+    - name: Check Domain Status (lsrpdomain)
+      ansible.builtin.shell: |
+        {{ tsa_bin_path }}/lsrpdomain
+      register: domain_output
+      changed_when: false
+
+    - name: Parse Failed TSA Resources
+      ansible.builtin.set_fact:
+        failed_resources: "{{ lssam_output.stdout_lines | select('search', 'Failed Offline') | list }}"
+        pending_resources: "{{ lssam_output.stdout_lines | select('search', 'Pending') | list }}"
+
+    - name: Report TSA Health
+      ansible.builtin.debug:
+        msg: "TSA Cluster is healthy on {{ inventory_hostname }}"
+      when: failed_resources | length == 0 and 'Online' in domain_output.stdout
+
+    - name: Log TSA Issues to CSV (via common role)
+      include_role:
+        name: common
+        tasks_from: log_to_csv
+      vars:
+        check_name: "TSA Cluster Status"
+        severity: "CRITICAL"
+        description: "Found {{ failed_resources | length }} failed resources"
+        status: "FAIL"
+      when: failed_resources | length > 0
+
+  when: tsa_installed.stat.exists
+  rescue:
+    - name: Handle Missing TSA
+      ansible.builtin.debug:
+        msg: "TSA commands not found or cluster not configured on {{ inventory_hostname }}"

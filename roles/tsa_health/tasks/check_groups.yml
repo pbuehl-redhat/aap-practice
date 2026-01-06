@@ -1,0 +1,6 @@
+---
+- name: Verify DB2 Resource Group is Online
+  ansible.builtin.shell: "lssam -g db2_{{ instance_name }}_{{ db_name }}_group"
+  register: group_status
+  failed_when: "'Online' not in group_status.stdout"
+  ignore_errors: yes

@@ -1,0 +1,34 @@
+---
+- name: Verify Network Aliases and VIPs
+  block:
+    - name: Check TCP Connectivity to Alias
+      ansible.builtin.wait_for:
+        host: "{{ item.vip_name }}"
+        port: 22
+        timeout: 5
+      loop: "{{ db2_aliases }}"
+      register: port_check
+      ignore_errors: yes
+
+    - name: Compare Alias Hostname to Physical Hostname
+      ansible.builtin.shell: "ssh -o StrictHostKeyChecking=no {{ item.item.vip_name }} 'hostname'"
+      loop: "{{ port_check.results }}"
+      register: alias_ssh_results
+      when: item.state is defined and item.state == "started"
+      changed_when: false
+      ignore_errors: yes
+
+    - name: Log Alias Results
+      include_role:
+        name: common
+        tasks_from: log_to_csv
+      vars:
+        check_name: "Alias Check"
+        severity: "CRITICAL"
+        description: "Alias {{ item.item.item.vip_name }} routes to {{ item.stdout | default('TIMEOUT') }}"
+        status: >-
+          {% if item.rc | default(1) != 0 %}FAIL
+          {% elif item.stdout | trim | upper == inventory_hostname | upper %}PASS
+          {% else %}WARN{% endif %}
+      loop: "{{ alias_ssh_results.results }}"
+      when: item.skipped is not defined

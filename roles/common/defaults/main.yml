@@ -1,0 +1,15 @@
+---
+# Replacement for HC_TIMESTAMP
+hc_timestamp: "{{ lookup('pipe', 'date +%Y%m%d_%H%M%S') }}"
+hc_date: "{{ hc_timestamp[:8] }}"
+
+# Reporting Paths
+report_base_dir: "/udbarch/logs/health_checks"
+csv_report_name: "HEALTH_CHECK_LOG_{{ hc_timestamp }}.csv"
+csv_report_path: "{{ report_base_dir }}/{{ csv_report_name }}"
+
+# Original Script Header
+csv_header: "RFC,TIMESTAMP,SERVER,TEST,SEVERITY,INSTANCE,DATABASE,PORT,DESCRIPTION,RESULT"
+
+# Default RFC if not provided via -e "rfc=12345"
+rfc: "N/A"

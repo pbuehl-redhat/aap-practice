@@ -1,0 +1,30 @@
+---
+- name: Disk Usage Check (Using Ansible Facts)
+  ansible.builtin.set_fact:
+    disk_alerts: "{{ disk_alerts | default([]) + [item.mount + ' usage is ' + (100 - (item.size_available / item.size_total * 100) | int) | string + '%'] }}"
+  loop: "{{ ansible_mounts }}"
+  # Logic: If (Available / Total * 100) is less than (100 - threshold), it's a fail
+  when: "(100 - (item.size_available / item.size_total * 100) | int) >= disk_usage_warn"
+
+- name: CPU Usage Check (Using mpstat)
+  ansible.builtin.shell: |
+    mpstat 1 1 | tail -1 | awk '{print 100 - $NF}'
+  register: cpu_idle_check
+  changed_when: false
+
+- name: Set CPU Status Fact
+  ansible.builtin.set_fact:
+    cpu_usage: "{{ cpu_idle_check.stdout | float | round(1) }}"
+
+- name: Evaluate System Health Results
+  ansible.builtin.debug:
+    msg:
+      - "Disk Alerts: {{ disk_alerts | default(['All Filesystems OK']) }}"
+      - "CPU Usage: {{ cpu_usage }}%"
+
+- name: Fail if Critical Thresholds Exceeded
+  ansible.builtin.assert:
+    that:
+      - cpu_usage | float < cpu_usage_critical
+    fail_msg: "CRITICAL: CPU Usage is at {{ cpu_usage }}%"
+    success_msg: "CPU Usage is within normal limits"

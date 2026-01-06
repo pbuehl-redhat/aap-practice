@@ -1,0 +1,21 @@
+---
+- name: Initialize Local Reporting Directory
+  delegate_to: localhost
+  run_once: true
+  ansible.builtin.file:
+    path: "{{ report_base_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Create CSV Header
+  delegate_to: localhost
+  run_once: true
+  ansible.builtin.copy:
+    content: "{{ csv_header }}\n"
+    dest: "{{ csv_report_path }}"
+    mode: '0644'
+
+- name: Ensure DB2 Profile scripts exist
+  ansible.builtin.stat:
+    path: /home/db2inst1/sqllib/db2profile
+  register: db2_profile_check

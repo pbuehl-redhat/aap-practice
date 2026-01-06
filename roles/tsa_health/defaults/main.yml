@@ -1,0 +1,6 @@
+---
+# TSA Health Defaults
+tsa_bin_path: "/usr/sbin/rsct/bin"
+expected_resource_state: "Online"
+# You can override this per host if a node is expected to be Standby
+tsa_node_role: "Primary"

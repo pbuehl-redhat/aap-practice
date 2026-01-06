@@ -1,0 +1,45 @@
+---
+- name: Get Database List for {{ instance_name }}
+  become: yes
+  become_user: "{{ instance_name }}"
+  shell: |
+    . ~/sqllib/db2profile
+    db2 list db directory | awk '/Database name/ {print $4}' | sort -u
+  register: db_list
+  changed_when: false
+
+- name: Validate Database Health
+  become: yes
+  become_user: "{{ instance_name }}"
+  shell: |
+    . ~/sqllib/db2profile
+    db2 connect to {{ item }} > /dev/null
+
+    # Check Tablespaces
+    TBSP_COUNT=$(db2 -x "select count(*) from SYSIBMADM.SNAPTBSP_PART where TBSP_STATE != 'NORMAL' with ur" | tr -d ' ')
+
+    # Check Tables
+    FAIL_TABLES=$(db2 -x "select count(*) from syscat.tables where status != 'N' with ur" | tr -d ' ')
+
+    echo "TBSP_COUNT=$TBSP_COUNT|FAIL_TABLES=$FAIL_TABLES"
+    db2 connect reset > /dev/null
+  loop: "{{ db_list.stdout_lines }}"
+  register: db_results
+  changed_when: false
+
+- name: Check HADR Status
+  become: yes
+  become_user: "{{ instance_name }}"
+  shell: |
+    . ~/sqllib/db2profile
+    hadr_out=$(db2pd -db {{ item }} -hadr)
+    if echo "$hadr_out" | grep -q "HADR is not active"; then
+      echo "STATUS=NOT_CONFIGURED"
+    else
+      ROLE=$(echo "$hadr_out" | awk '/Role/ {print $3}')
+      STATE=$(echo "$hadr_out" | awk '/State/ {print $3}')
+      echo "STATUS=ACTIVE|ROLE=$ROLE|STATE=$STATE"
+    fi
+  loop: "{{ db_list.stdout_lines }}"
+  register: hadr_results
+  changed_when: false

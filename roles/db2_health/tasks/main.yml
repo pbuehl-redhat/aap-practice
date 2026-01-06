@@ -1,0 +1,11 @@
+---
+- name: Find DB2 Instances
+  ansible.builtin.shell: "db2greg -dump | awk -F, '/^I,DB2/ {print $4}' | grep -v '^db2$'"
+  register: db2_instances
+  changed_when: false
+
+- name: Perform DB Health Checks
+  include_tasks: instance_checks.yml
+  loop: "{{ db2_instances.stdout_lines }}"
+  loop_control:
+    loop_var: instance_name

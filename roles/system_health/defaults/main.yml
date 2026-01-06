@@ -1,0 +1,6 @@
+---
+# Thresholds for alerts
+disk_usage_critical: 95
+disk_usage_warn: 90
+cpu_usage_critical: 90
+cpu_usage_warn: 80

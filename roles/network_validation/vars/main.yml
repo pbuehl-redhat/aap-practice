@@ -1,0 +1,5 @@
+---
+# Example structure for aliases associated with a host
+db2_aliases:
+  - vip_name: "prod-db-vip1"
+  - vip_name: "prod-db-alias"
